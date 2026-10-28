@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sentinela — Análise de phishing para PMEs</title>
+<style>
+:root {
+  --site-primary: #102A43;
+  --site-on-primary: #FFFFFF;
+  --site-secondary: #C7F36B;
+  --site-on-secondary: #142B20;
+  --site-background: #F5F8F6;
+  --site-on-background: #102A43;
+  --site-font-body: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --site-font-heading: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --site-heading-scale: 1;
+  --site-spacing-scale: 1;
+  --site-radius-scale: 1;
+  --site-decoration-opacity: 1;
+  --surface: #FFFFFF;
+  --muted: #607487;
+  --line: #DCE6E2;
+  --accent: #C7F36B;
+  --deep: #102A43;
+  --green: #176B52;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; font-family: var(--site-font-body); color: var(--site-on-background); background: var(--site-background); }
+.app-root { min-height: 100vh; width: 100%; background-color: var(--site-background); color: var(--site-on-background); overflow: hidden; }
+a { color: inherit; text-decoration: none; }
+button, input, select { font: inherit; }
+.container { width: min(1140px, calc(100% - 44px)); margin: 0 auto; }
+.topbar { background: var(--deep); color: #fff; border-bottom: 1px solid rgba(255,255,255,.12); }
+.nav { min-height: 78px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.brand { display: flex; align-items: center; gap: 11px; font-weight: 800; letter-spacing: -.04em; font-size: 1.24rem; }
+.brand-mark { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 12px; background: var(--accent); color: var(--deep); }
+.brand-mark svg { width: 23px; height: 23px; }
+.nav-links { display: flex; align-items: center; gap: 28px; color: #D8E4ED; font-size: .92rem; }
+.nav-links a:hover { color: var(--accent); }
+.button { display: inline-flex; align-items: center; justify-content: center; gap: 9px; border: 0; border-radius: calc(12px * var(--site-radius-scale)); padding: 14px 19px; font-weight: 750; cursor: pointer; transition: transform .18s ease, background .18s ease; }
+.button:hover { transform: translateY(-2px); }
+.button-primary { background: var(--accent); color: var(--deep); }
+.button-primary:hover { background: #d7ff8b; }
+.button-outline { border: 1px solid rgba(255,255,255,.32); color: #fff; background: transparent; }
+.hero { position: relative; background: var(--deep); color: #fff; padding: 76px 0 92px; }
+.hero:before { content: ""; position: absolute; width: 480px; height: 480px; border-radius: 50%; border: 1px solid rgba(199,243,107,.12); right: -130px; top: -190px; box-shadow: 0 0 0 55px rgba(199,243,107,.025), 0 0 0 110px rgba(199,243,107,.02); pointer-events: none; opacity: var(--site-decoration-opacity); }
+.hero-grid { display: grid; grid-template-columns: 1.05fr .95fr; align-items: center; gap: 66px; position: relative; z-index: 1; }
+.eyebrow { display: inline-flex; align-items: center; gap: 8px; text-transform: uppercase; letter-spacing: .12em; font-size: .75rem; font-weight: 800; color: var(--accent); }
+.eyebrow:before { content: ""; width: 22px; height: 2px; background: var(--accent); }
+h1, h2, h3, p { margin-top: 0; }
+h1 { font-family: var(--site-font-heading); font-size: clamp(2.65rem, 5vw, 4.55rem); line-height: 1.04; letter-spacing: -.06em; margin: 22px 0 23px; max-width: 690px; }
+h1 span { color: var(--accent); }
+.hero-copy { font-size: 1.12rem; line-height: 1.75; color: #C8D6E2; max-width: 590px; }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 29px 0 25px; }
+.microcopy { color: #A8BAC9; font-size: .82rem; }
+.trust-row { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 32px; color: #D4E0E8; font-size: .82rem; }
+.trust-row span { display: flex; gap: 7px; align-items: center; }
+.check { display: inline-grid; place-items: center; width: 19px; height: 19px; border-radius: 50%; background: rgba(199,243,107,.14); color: var(--accent); font-weight: 900; }
+.dashboard { border: 1px solid rgba(255,255,255,.17); background: #173650; border-radius: 22px; padding: 19px; box-shadow: 0 28px 80px rgba(0,0,0,.25); transform: rotate(1deg); }
+.dash-top { display: flex; align-items: center; justify-content: space-between; padding: 3px 2px 18px; border-bottom: 1px solid rgba(255,255,255,.12); }
+.dash-title { font-weight: 800; font-size: .92rem; }
+.live { display: flex; align-items: center; gap: 6px; color: #BFEA8B; font-size: .72rem; font-weight: 800; }
+.live:before { content: ""; width: 7px; height: 7px; background: #9FE36A; border-radius: 50%; }
+.dash-stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 16px 0; }
+.stat { background: rgba(255,255,255,.055); padding: 14px 12px; border-radius: 12px; }
+.stat small { display: block; color: #AFC2D0; font-size: .7rem; margin-bottom: 8px; }
+.stat strong { font-size: 1.35rem; letter-spacing: -.04em; }
+.stat .risk { color: #FFB1A7; }
+.email-card { background: #F8FBF9; color: var(--deep); border-radius: 14px; padding: 17px; }
+.email-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.email-label { color: #6C7F8F; font-size: .7rem; margin-bottom: 5px; }
+.email-sender { font-weight: 800; font-size: .88rem; }
+.badge { display: inline-block; border-radius: 999px; background: #FCE3DF; color: #9A3028; padding: 6px 9px; font-size: .68rem; font-weight: 850; white-space: nowrap; }
+.email-subject { font-weight: 800; margin: 17px 0 8px; }
+.email-text { color: #526779; font-size: .78rem; line-height: 1.6; }
+.indicators { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px; }
+.indicator { border: 1px solid #E0E8E3; border-radius: 9px; padding: 10px; font-size: .72rem; color: #536A7A; }
+.indicator b { display: block; color: #A13D32; font-size: .75rem; margin-bottom: 4px; }
+.section { padding: 82px 0; }
+.section-heading { max-width: 720px; margin: 0 auto 44px; text-align: center; }
+.kicker { color: var(--green); font-weight: 850; text-transform: uppercase; font-size: .75rem; letter-spacing: .13em; }
+h2 { font-size: clamp(2rem, 3.3vw, 3rem); letter-spacing: -.05em; line-height: 1.12; margin: 14px 0 16px; }
+.section-heading p { color: var(--muted); line-height: 1.75; font-size: 1.02rem; }
+.problem-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.info-card { background: var(--surface); border: 1px solid var(--line); border-radius: calc(18px * var(--site-radius-scale)); padding: 27px; }
+.card-icon { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; background: #EAF5E2; color: var(--green); margin-bottom: 21px; }
+.card-icon svg { width: 23px; height: 23px; }
+.info-card h3 { font-size: 1.12rem; letter-spacing: -.025em; margin-bottom: 10px; }
+.info-card p { color: var(--muted); line-height: 1.7; font-size: .92rem; margin-bottom: 0; }
+.value-section { background: #EAF1ED; }
+.value-grid { display: grid; grid-template-columns: .9fr 1.1fr; gap: 65px; align-items: center; }
+.value-copy p { color: var(--muted); line-height: 1.8; }
+.value-list { display: grid; gap: 15px; margin: 27px 0 0; }
+.value-item { display: flex; align-items: flex-start; gap: 13px; }
+.value-item .check { flex: 0 0 auto; background: var(--deep); color: var(--accent); margin-top: 2px; }
+.value-item strong { display: block; margin-bottom: 4px; }
+.value-item span:last-child { color: var(--muted); line-height: 1.6; font-size: .91rem; }
+.workflow { background: #fff; border: 1px solid var(--line); border-radius: 20px; padding: 28px; }
+.workflow h3 { margin-bottom: 22px; }
+.step { display: grid; grid-template-columns: 43px 1fr; gap: 14px; padding: 17px 0; border-bottom: 1px solid #E7EEEA; }
+.step:last-child { border-bottom: 0; padding-bottom: 0; }
+.step-number { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 12px; background: var(--deep); color: var(--accent); font-weight: 850; }
+.step strong { display: block; margin: 1px 0 5px; }
+.step p { color: var(--muted); line-height: 1.6; font-size: .88rem; margin: 0; }
+.audience { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.audience .info-card { padding: 24px; }
+.audience .info-card p { font-size: .88rem; }
+.cta-section { padding: 0 0 84px; }
+.cta-box { background: var(--deep); color: #fff; border-radius: 24px; padding: 52px; display: grid; grid-template-columns: 1fr .8fr; gap: 48px; align-items: center; }
+.cta-box h2 { margin-top: 13px; }
+.cta-box p { color: #C7D6E0; line-height: 1.7; margin-bottom: 0; }
+.form-card { background: #fff; color: var(--deep); padding: 24px; border-radius: 17px; }
+.form-card h3 { margin-bottom: 7px; }
+.form-card .form-sub { color: var(--muted); font-size: .85rem; line-height: 1.5; margin-bottom: 18px; }
+.field { margin-bottom: 13px; }
+.field label { display: block; font-size: .78rem; font-weight: 750; margin-bottom: 6px; }
+.field input, .field select { width: 100%; border: 1px solid #D6E1DC; border-radius: 9px; padding: 12px; background: #FBFCFB; color: var(--deep); outline: none; }
+.field input:focus, .field select:focus { border-color: #639B58; box-shadow: 0 0 0 3px rgba(99,155,88,.13); }
+.form-card .button { width: 100%; margin-top: 4px; background: var(--accent); }
+.form-note { font-size: .72rem; color: #7B8B97; line-height: 1.5; margin: 12px 0 0; }
+.success-message { display: none; border-radius: 10px; background: #EAF5E2; padding: 13px; margin-top: 13px; color: #20583C; font-size: .88rem; line-height: 1.5; }
+footer { background: #0B2033; color: #C3D0DA; padding: 26px 0; font-size: .82rem; }
+.footer-inner { display: flex; justify-content: space-between; align-items: center; gap: 20px; }
+.footer-brand { color: #fff; font-weight: 800; }
+.disclaimer { color: #8DA1B0; max-width: 600px; text-align: right; line-height: 1.5; }
+@media (max-width: 850px) {
+  .hero-grid, .value-grid, .cta-box { grid-template-columns: 1fr; gap: 38px; }
+  .hero { padding: 60px 0 70px; }
+  .dashboard { max-width: 560px; transform: none; }
+  .problem-grid, .audience { grid-template-columns: 1fr; }
+  .cta-box { padding: 32px; }
+  .nav-links { gap: 14px; }
+  .nav-links a:not(.button) { display: none; }
+}
+@media (max-width: 520px) {
+  .container { width: min(100% - 30px, 1140px); }
+  .nav { min-height: 68px; }
+  .nav .button { padding: 11px 13px; font-size: .8rem; }
+  h1 { font-size: 2.65rem; }
+  .hero-copy { font-size: 1rem; }
+  .hero-actions .button { width: 100%; }
+  .dash-stat-row { gap: 6px; }
+  .stat { padding: 11px 8px; }
+  .stat strong { font-size: 1.12rem; }
+  .section { padding: 62px 0; }
+  .cta-section { padding-bottom: 62px; }
+  .cta-box { padding: 24px 18px; }
+  .form-card { padding: 19px; }
+  .footer-inner { align-items: flex-start; flex-direction: column; }
+  .disclaimer { text-align: left; }
+}
+@media (prefers-color-scheme: dark) {
+  /* The brand intentionally keeps its authored, light content surfaces for readability. */
+}
+</style>
+</head>
+<body>
+<div class="app-root" data-sites-preview-theme="custom">
+<header class="topbar">
+  <div class="container nav">
+    <a class="brand" href="#inicio" aria-label="Sentinela, início">
+      <span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.8 20 6v5.1c0 5.1-3.4 8.4-8 10.1-4.6-1.7-8-5-8-10.1V6l8-3.2Z" stroke="currentColor" stroke-width="1.8"/><path d="m8.3 12.1 2.4 2.4 5-5.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      Sentinela
+    </a>
+    <nav class="nav-links" aria-label="Navegação principal">
+      <a href="#problema">O problema</a><a href="#solucao">A solução</a><a href="#para-quem">Para quem</a>
+      <a class="button button-primary" href="#interesse">Conhecer a proposta <span aria-hidden="true">↗</span></a>
+    </nav>
+  </div>
+</header>
+<main>
+<section class="hero" id="inicio">
+  <div class="container hero-grid">
+    <div>
+      <span class="eyebrow">Segurança digital para PMEs</span>
+      <h1>Um e-mail suspeito não precisa virar <span>um incidente.</span></h1>
+      <p class="hero-copy">Conheça uma nova forma de ajudar pequenas e médias empresas a analisar mensagens suspeitas, entender os riscos e decidir os próximos passos — sem precisar ser especialista em cibersegurança.</p>
+      <div class="hero-actions"><a class="button button-primary" href="#solucao">Veja como funciona <span aria-hidden="true">↓</span></a><a class="button button-outline" href="#interesse">Tenho interesse</a></div>
+      <p class="microcopy">Projeto em desenvolvimento • Estamos validando a solução com empresas.</p>
+      <div class="trust-row"><span><i class="check">✓</i> Análise fácil de entender</span><span><i class="check">✓</i> Risco explicado com clareza</span><span><i class="check">✓</i> Pensado para PMEs</span></div>
+    </div>
+    <div class="dashboard" aria-label="Exemplo ilustrativo de relatório de análise">
+      <div class="dash-top"><div class="dash-title">Prévia de análise</div><div class="live">DEMONSTRAÇÃO</div></div>
+      <div class="dash-stat-row"><div class="stat"><small>Mensagens analisadas</small><strong>128</strong></div><div class="stat"><small>Risco elevado</small><strong class="risk">12</strong></div><div class="stat"><small>Indicadores</small><strong>36</strong></div></div>
+      <div class="email-card">
+        <div class="email-header"><div><div class="email-label">REMETENTE</div><div class="email-sender">financeiro@empresa-verifica.example</div></div><span class="badge">RISCO ALTO</span></div>
+        <div class="email-subject">Ação necessária: confirme seu pagamento</div>
+        <p class="email-text">Identificamos sinais que merecem atenção nesta mensagem. Confira os indicadores abaixo antes de clicar em links ou abrir anexos.</p>
+        <div class="indicators"><div class="indicator"><b>⚠ Domínio</b>Possível imitação</div><div class="indicator"><b>⚠ Linguagem</b>Urgência incomum</div><div class="indicator"><b>⚠ Link</b>Destino a verificar</div><div class="indicator"><b>✓ Próximo passo</b>Validar com o remetente</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="section" id="problema">
+  <div class="container">
+    <div class="section-heading"><span class="kicker">O desafio</span><h2>O phishing explora justamente a confiança do dia a dia.</h2><p>Uma mensagem falsa pode parecer uma cobrança, uma nota fiscal ou um pedido urgente de um colega. Para empresas com equipes pequenas, avaliar esses sinais nem sempre é simples.</p></div>
+    <div class="problem-grid">
+      <article class="info-card"><div class="card-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 5h16v14H4z" stroke="currentColor" stroke-width="1.8"/><path d="m4 7 8 6 8-6" stroke="currentColor" stroke-width="1.8"/><path d="M17 3v4M15 5h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div><h3>Mensagens convincentes</h3><p>Golpes imitam fornecedores, bancos e colegas para induzir alguém a clicar, compartilhar dados ou realizar pagamentos.</p></article>
+      <article class="info-card"><div class="card-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="10.8" cy="10.8" r="6.8" stroke="currentColor" stroke-width="1.8"/><path d="m16 16 4.5 4.5M8 10.8h5.6M10.8 8v5.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div><h3>Análise demorada</h3><p>Verificar remetente, links, domínios e outros sinais exige tempo e conhecimento que nem toda empresa tem disponível.</p></article>
+      <article class="info-card"><div class="card-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3 21 20H3L12 3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 9v5M12 17.2v.1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div><h3>Incerteza sobre o que fazer</h3><p>Sem uma orientação clara, o funcionário pode ignorar o risco ou encaminhar a mensagem sem os cuidados necessários.</p></article>
+    </div>
+  </div>
+</section>
+<section class="section value-section" id="solucao">
+  <div class="container value-grid">
+    <div class="value-copy"><span class="kicker">A proposta de valor</span><h2>Entender o risco. Decidir com mais confiança.</h2><p>O Sentinela é o conceito de uma plataforma SaaS que pretende simplificar a análise de phishing para PMEs, reunindo sinais técnicos em um resultado acessível para quem precisa tomar uma decisão.</p>
+      <div class="value-list"><div class="value-item"><i class="check">✓</i><span><strong>Análise centralizada</strong><span>Reunir sinais do e-mail, domínio e links em uma visão organizada.</span></span></div><div class="value-item"><i class="check">✓</i><span><strong>Classificação de risco explicada</strong><span>Apresentar os indicadores que motivaram a avaliação, e não apenas um alerta genérico.</span></span></div><div class="value-item"><i class="check">✓</i><span><strong>Orientação para os próximos passos</strong><span>Ajudar o usuário a saber quando não clicar, reportar a mensagem ou procurar o responsável por TI.</span></span></div></div>
+    </div>
+    <div class="workflow"><h3>Como a experiência poderá funcionar</h3><div class="step"><div class="step-number">01</div><div><strong>Envie a mensagem suspeita</strong><p>O usuário fornece a mensagem ou os dados necessários para a análise, conforme os recursos disponíveis no produto.</p></div></div><div class="step"><div class="step-number">02</div><div><strong>Analise os indicadores</strong><p>A plataforma verifica sinais relevantes, como remetente, domínio, links e características suspeitas.</p></div></div><div class="step"><div class="step-number">03</div><div><strong>Veja o resultado e as recomendações</strong><p>Um relatório apresenta o nível de risco estimado, os motivos e ações sugeridas para uma avaliação humana.</p></div></div></div>
+  </div>
+</section>
+<section class="section" id="para-quem">
+  <div class="container"><div class="section-heading"><span class="kicker">Feito para quem precisa de clareza</span><h2>Segurança mais acessível para empresas menores.</h2><p>A proposta está sendo construída para organizações que precisam lidar com e-mails suspeitos, mas não contam necessariamente com um time dedicado de cibersegurança.</p></div>
+    <div class="audience"><article class="info-card"><h3>Pequenas e médias empresas</h3><p>Negócios que usam e-mail corporativo para pagamentos, atendimento, documentos e comunicação com fornecedores.</p></article><article class="info-card"><h3>Equipes enxutas de TI</h3><p>Profissionais que acumulam responsabilidades e precisam agilizar a triagem inicial de mensagens suspeitas.</p></article><article class="info-card"><h3>Consultorias e suporte de TI</h3><p>Prestadores que buscam avaliar se uma ferramenta de apoio à análise pode complementar o atendimento aos clientes.</p></article></div>
+  </div>
+</section>
+<section class="cta-section" id="interesse"><div class="container"><div class="cta-box"><div><span class="eyebrow">Participe da validação</span><h2>Ajude a construir uma solução para um problema real.</h2><p>Estamos conversando com profissionais de TI, gestores e empresas para entender como lidam com phishing e quais recursos seriam mais úteis. Demonstre seu interesse em acompanhar o projeto ou participar de uma conversa de validação.</p></div>
+  <form class="form-card" id="interestForm"><h3>Tenho interesse</h3><p class="form-sub">Preencha os campos para registrar seu interesse nesta demonstração.</p><div class="field"><label for="name">Nome</label><input id="name" name="name" autocomplete="name" required placeholder="Seu nome"></div><div class="field"><label for="email">E-mail profissional</label><input id="email" name="email" type="email" autocomplete="email" required placeholder="voce@empresa.com"></div><div class="field"><label for="role">Qual é o seu perfil?</label><select id="role" name="role" required><option value="">Selecione uma opção</option><option>Responsável por uma PME</option><option>Profissional de TI / Segurança</option><option>Consultoria ou suporte de TI</option><option>Funcionário de uma empresa</option><option>Outro</option></select></div><button class="button" type="submit">Registrar interesse <span aria-hidden="true">→</span></button><div class="success-message" id="successMessage" role="status">Obrigado pelo interesse! Este é um protótipo: os dados não foram enviados nem armazenados. Configure um serviço de formulário antes de publicar para receber respostas.</div><p class="form-note">Protótipo acadêmico. Não envie mensagens reais, anexos, senhas ou informações confidenciais por este formulário.</p></form>
+</div></div></section>
+</main>
+<footer><div class="container footer-inner"><div><span class="footer-brand">Sentinela</span> · Projeto acadêmico em validação</div><div class="disclaimer">A plataforma apresentada é um conceito em desenvolvimento. As telas e indicadores são ilustrativos e não representam uma análise real de segurança.</div></div></footer>
+</div>
+<script>
+document.getElementById('interestForm').addEventListener('submit', function(event) {
+  event.preventDefault();
+  if (!this.reportValidity()) return;
+  document.getElementById('successMessage').style.display = 'block';
+  document.getElementById('successMessage').scrollIntoView({behavior: 'smooth', block: 'nearest'});
+});
+</script>
+</body>
+</html>
